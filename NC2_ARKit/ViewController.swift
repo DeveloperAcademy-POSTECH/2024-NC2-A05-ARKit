@@ -7,12 +7,16 @@ import UIKit
 import SceneKit
 import ARKit
 import SceneKit.ModelIO
-
+import AVFoundation
 
 class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDelegate  {
     
     @IBOutlet var sceneView: ARSCNView!
     
+    // 사운드 플레이어용 속성 추가
+    var audioPlayer: AVAudioPlayer?
+    var soundIndex = 0
+    var currentModelName: String?
     
     // 핸드드래그용 노드 추가
     var selectedNode: SCNNode?
@@ -93,6 +97,29 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
         
     }
     
+    // 사운드 함수
+    
+    @objc private func playSound(_ modelName: String?) {
+        soundIndex = (soundIndex + 1) % 3  // 0, 1, 2를 순환
+        let soundName = "Fire_Sound_\(soundIndex + 1)"
+          
+        guard let url = Bundle.main.url(forResource: soundName, withExtension: "mp3")  else { return }
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: url)
+                audioPlayer?.prepareToPlay()
+               
+                guard let modelName = modelName else { return }
+                if modelName != "Seaside" {
+                    audioPlayer?.play()
+                }
+            } catch {
+                print(error)
+            }
+        
+    }
+    
+    
+    
     // 인벤토리 함수
     func setupPlusButton() {
         let plusButton = UIButton(type: .system)
@@ -139,6 +166,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
         longPressGestureRecognizer.delaysTouchesBegan = true
         sceneView.addGestureRecognizer(longPressGestureRecognizer)
         
+        // 사운드 재생용 더블 탭 제스쳐 추가
+        
+        let doubleTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
+        doubleTapGestureRecognizer.numberOfTapsRequired = 2
+        sceneView.addGestureRecognizer(doubleTapGestureRecognizer)
     }
     
    
@@ -179,7 +211,13 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
         // 일부 객체가 검게 보이는 현상이 있으므로 다시 조명추가해줌
         // 씬에서 오브젝트를 갈아낄때 노드가 삭제되면서 조명(라이팅)이 제거된 것으로 보임
         addLighting()
+        currentModelName = modelName
+      
+        // 소리를 재생합니다
+        playSound(modelName)
+      
         
+   
         // 노드를 올립니다
         node.load()
         // Animated_fire 모델의 특성으로 z축으로 떨어져서 보내게 했습니다
@@ -378,7 +416,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
             break
         }
     }
-
+    
+    @objc func handleDoubleTap(_ gesture: UITapGestureRecognizer) {
+        playSound(currentModelName)
+    }
 }
     extension SCNAction {
         class func scale(to scale: CGFloat, duration: TimeInterval) -> SCNAction {

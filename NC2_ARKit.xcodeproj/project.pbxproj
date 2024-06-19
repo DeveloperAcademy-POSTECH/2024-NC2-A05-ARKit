@@ -16,6 +16,9 @@
 		1A0E0C1F2C2094C4004F09FF /* ViewController.swift in Resources */ = {isa = PBXBuildFile; fileRef = 05CABD722A41DBEB0030ECFA /* ViewController.swift */; };
 		1A0E0C202C2094C9004F09FF /* AppDelegate.swift in Resources */ = {isa = PBXBuildFile; fileRef = 05CABD6E2A41DBEB0030ECFA /* AppDelegate.swift */; };
 		1A6118622C22B9FF00754673 /* InventoryViewConroller.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1A6118612C22B9FF00754673 /* InventoryViewConroller.swift */; };
+		1A8A4A1F2C22EF940069FB56 /* Fire_Sound_1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 1A8A4A1B2C22EF940069FB56 /* Fire_Sound_1.mp3 */; };
+		1A8A4A202C22EF940069FB56 /* Fire_Sound_2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 1A8A4A1C2C22EF940069FB56 /* Fire_Sound_2.mp3 */; };
+		1A8A4A212C22EF940069FB56 /* Water_Sound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 1A8A4A1D2C22EF940069FB56 /* Water_Sound.mp3 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -28,6 +31,9 @@
 		1A0E0C112C20810B004F09FF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Assets.xcassets; path = ../Assets.xcassets; sourceTree = "<group>"; };
 		1A0E0C1C2C2094B1004F09FF /* NC2_ARKit.xcodeproj */ = {isa = PBXFileReference; lastKnownFileType = "wrapper.pb-project"; path = NC2_ARKit.xcodeproj; sourceTree = "<group>"; };
 		1A6118612C22B9FF00754673 /* InventoryViewConroller.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InventoryViewConroller.swift; sourceTree = "<group>"; };
+		1A8A4A1B2C22EF940069FB56 /* Fire_Sound_1.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Fire_Sound_1.mp3; sourceTree = "<group>"; };
+		1A8A4A1C2C22EF940069FB56 /* Fire_Sound_2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Fire_Sound_2.mp3; sourceTree = "<group>"; };
+		1A8A4A1D2C22EF940069FB56 /* Water_Sound.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Water_Sound.mp3; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -61,6 +67,7 @@
 		05CABD6D2A41DBEB0030ECFA /* NC2_ARKit */ = {
 			isa = PBXGroup;
 			children = (
+				1A8A4A1E2C22EF940069FB56 /* Sound */,
 				05CABD6E2A41DBEB0030ECFA /* AppDelegate.swift */,
 				05CABD702A41DBEB0030ECFA /* art.scnassets */,
 				05CABD722A41DBEB0030ECFA /* ViewController.swift */,
@@ -75,6 +82,16 @@
 		1A61185F2C22A65D00754673 /* Products */ = {
 			isa = PBXGroup;
 			name = Products;
+			sourceTree = "<group>";
+		};
+		1A8A4A1E2C22EF940069FB56 /* Sound */ = {
+			isa = PBXGroup;
+			children = (
+				1A8A4A1B2C22EF940069FB56 /* Fire_Sound_1.mp3 */,
+				1A8A4A1C2C22EF940069FB56 /* Fire_Sound_2.mp3 */,
+				1A8A4A1D2C22EF940069FB56 /* Water_Sound.mp3 */,
+			);
+			path = Sound;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -141,10 +158,13 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1A8A4A212C22EF940069FB56 /* Water_Sound.mp3 in Resources */,
 				1A0E0C202C2094C9004F09FF /* AppDelegate.swift in Resources */,
+				1A8A4A1F2C22EF940069FB56 /* Fire_Sound_1.mp3 in Resources */,
 				1A0E0C1F2C2094C4004F09FF /* ViewController.swift in Resources */,
 				05CABD712A41DBEB0030ECFA /* art.scnassets in Resources */,
 				05CABD7B2A41DBEB0030ECFA /* LaunchScreen.storyboard in Resources */,
+				1A8A4A202C22EF940069FB56 /* Fire_Sound_2.mp3 in Resources */,
 				1A0E0C132C20810B004F09FF /* Assets.xcassets in Resources */,
 				05CABD762A41DBEB0030ECFA /* Main.storyboard in Resources */,
 			);
