@@ -46,9 +46,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
         
         // USDZ 파일 로드 (초기 로드)
       
-        loadUSDZModel(named: "Animated_fire")
-        // 버튼 설정
-        // setupButtons()
+    //    loadUSDZModel(named: "Animated_fire")
         // 플러스버튼으로 인벤토리 생성
         setupPlusButton()
         // 제스처 인식기 추가
@@ -78,15 +76,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
     }
     
     // MARK: - ARSCNViewDelegate
-    
-    /*
-     // Override to create and configure nodes for anchors added to the view's session.
-     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
-     let node = SCNNode()
-     
-     return node
-     }
-     */
+   
     
     func session(_ session: ARSession, didFailWithError error: Error) {
         // Present an error message to the user
@@ -151,71 +141,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
         
     }
     
-    // 버튼 관련 함수
-    func setupButtons() {
-        let buttonTitles = ["Fire", "SeaSide", "Rock", "Zone"]
-        let buttonColors: [UIColor] = [.red, .blue, .green, .brown]
-        
-        for (index, title) in buttonTitles.enumerated() {
-            let button = UIButton(frame: CGRect(x: 20, y: 50 + (index * 60), width: 100, height: 50))
-            button.setTitle(title, for: .normal)
-            button.backgroundColor = buttonColors[index]
-            button.addTarget(self, action: #selector(buttonTapped(_:)), for: .touchUpInside)
-            button.tag = index
-            self.view.addSubview(button)  // 버튼을 뷰 컨트롤러의 메인 뷰에 추가
-        }
-       }
-       
-       @objc func buttonTapped(_ sender: UIButton) {
-           switch sender.tag {
-           case 0:
-               loadUSDZModel(named: "Animated_fire")
-           case 1:
-               loadUSDZModel(named: "Seaside")
-           case 2:
-               loadUSDZModel(named: "Campfire_rock")
-           case 3:
-               loadUSDZModel(named: "Campfire_Zone")
-           default:
-               break
-           }
-       }
-    
-    
-    
-    func makeEarth() {
-        let earth = SCNSphere(radius: 0.2)
-        let material = SCNMaterial()
-        
-        material.diffuse.contents = UIImage(named: "art.scnassets/8081_earthmap2k.jpg")
-        
-        earth.materials = [material]
-        
-        let node = SCNNode(geometry: earth)
-        node.position = SCNVector3(x: 0, y: 0, z: -1)
-        
-        sceneView.scene.rootNode.addChildNode(node)
-        // node.addChildNode(makeNameText())
-        node.addChildNode(makeFire())
-        
-        
-        addAnimation(node: node)
-    }
-    
-    func makeNameText() -> SCNNode {
-        let text = SCNText(string: "Judy", extrusionDepth: 2)
-        
-        let material = SCNMaterial()
-        material.diffuse.contents = UIColor.systemPink
-        
-        text.materials = [material]
-        
-        let textNode = SCNNode(geometry: text)
-        textNode.scale = SCNVector3(0.02, 0.02, 0.02)
-        textNode.position = SCNVector3(-0.2, 0.2, 0)
-        
-        return textNode
-    }
+   
     
     func addAnimation(node: SCNNode) {
         let rotateOneTime = SCNAction.rotateBy(x: 0, y: 0.8, z: 0, duration: 5)
@@ -240,75 +166,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
         
     }
        
-    /*
-     func makeNameText() -> SCNNode {
-     let text = SCNText(string: "Judy", extrusionDepth: 2)
-     
-     let material = SCNMaterial()
-     material.diffuse.contents = UIColor.systemPink
-     
-     text.materials = [material]
-     
-     let textNode = SCNNode(geometry: text)
-     textNode.scale = SCNVector3(0.02, 0.02, 0.02)
-     textNode.position = SCNVector3(-0.2, 0.2, 0)
-     
-     return textNode
-     }
-     */
-    
-    //추가코드
-    func makeFire() -> SCNNode {
-        // 불꽃 효과 생성
-        let fire = SCNParticleSystem(named: "Fire.scnp", inDirectory: "art.scnassets")
-        
-        guard let fire = fire else {
-            fatalError("Failed to load Fire.scnp from art.scnassets")
-        }
-        // 불꽃 노드 생성
-        let fireNode = SCNNode()
-        
-        fireNode.addParticleSystem(fire)
-        
-        // 불꽃 노드 위치 설정
-        fireNode.position = SCNVector3(x: 0, y: 0, z: 0)
-        
-        // 불꽃 노드를 씬에 추가
-        //sceneView.scene.rootNode.addChildNode(fireNode)
-        return fireNode
-    }
-    
-    
-    func makeAnotherFire() {
-        
-        let fireSphere = SCNSphere(radius: 0.2)
-        let material = SCNMaterial()
-        
-        material.diffuse.contents = UIImage(named: "art.scnassets/fire.jpg")
-        
-        fireSphere.materials = [material]
-        
-        let node = SCNNode(geometry: fireSphere)
-        node.position = SCNVector3(x: 0, y: 0, z: -1)
-        
-        sceneView.scene.rootNode.addChildNode(node)
-        // node.addChildNode(makeNameText())
-        node.addChildNode(makeFire())
-        
-        addAnimation(node: node)
-    }
+   
     
     func loadUSDZModel(named modelName: String) {
-        // Load the USDZ model
-        // art.scnassets/Experience_the_tranquility_of_the_seaside
-        // art.scnassets/Animated_fire
-        /*
-        guard let url = Bundle.main.url(forResource: "art.scnassets/Experience_the_tranquility_of_the_seaside", withExtension: "usdz"), let node = SCNReferenceNode(url: url) else {
-            print("USDZ 파일을 찾을 수 없습니다.")
-            return
-        }
-        */
-        
+     
         // sceneView의 씬에서 루트 노드의 모든 자식 노드를 제거
         // forEach 문으로 루트 노드의 모든 자식노드를 돌면서 씬의 루트 노드에 있는 모든 자식 노드를 제거함
         sceneView.scene.rootNode.childNodes.forEach { $0.removeFromParentNode() }

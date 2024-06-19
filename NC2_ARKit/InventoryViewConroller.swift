@@ -8,7 +8,7 @@ class InventoryViewController: UIViewController, UICollectionViewDelegate, UICol
     
     weak var delegate: InventoryViewControllerDelegate?
 
-    let models = ["Animated_fire", "Seaside", "Campfire_rock", "Campfire_Zone"]
+    let models = ["Animated_fire", "Seaside", "Campfire_rock", "Campfire_zone"]
     let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
 
     override func viewDidLoad() {
