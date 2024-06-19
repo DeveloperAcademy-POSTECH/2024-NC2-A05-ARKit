@@ -155,15 +155,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
     }
     
     func addMoveUpDownAnimation(node: SCNNode) {
-        
         let moveUp = SCNAction.moveBy(x: 0, y: 3, z: 0, duration: 2.5)
         let moveDown = SCNAction.moveBy(x: 0, y: -0.2, z: 0, duration: 2.5)
         let moveSequence = SCNAction.sequence([moveUp, moveDown])
-        
         let actionRepeat = SCNAction.repeatForever(moveSequence)
-        
         node.runAction(actionRepeat)
-        
     }
        
    
@@ -336,19 +332,43 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
                     for i in 1...64 {
                         let nodeName = String(format: "Feu%02d", i)
                         if let fireNode = selectedNode.childNode(withName: nodeName, recursively: true) {
-                            if fireNode.isHidden {
-                                fireNode.isHidden = false
-                            }
-                            else {
-                                fireNode.isHidden = true
-                            }
-                            fireNode.scale = SCNVector3(x: originalScale.x, y: originalScale.y, z: 100)
+                            
+                            let moveUp = SCNAction.moveBy(x: 0, y: 0, z: 100, duration: 2.5)
+                          
+                           
+                            fireNode.runAction(moveUp)
+                          
+                            
+                        
+                            fireNode.scale = SCNVector3(x: originalScale.x, y: originalScale.y, z: originalScale.y + originalScale.y*100)
                         }
                     }
                 }
             }
         
         case .ended, .cancelled:
+            let hitResults = sceneView.hitTest(location, options: nil)
+            if let hitResult = hitResults.first {
+                selectedNode = hitResult.node
+                while let parent = selectedNode?.parent, parent !== sceneView.scene.rootNode {
+                    selectedNode = parent
+                }
+                originalNodePosition = selectedNode?.position
+                originalScale = selectedNode?.scale
+                if let selectedNode = selectedNode, let originalScale = originalScale {
+                    for i in 1...64 {
+                        let nodeName = String(format: "Feu%02d", i)
+                        if let fireNode = selectedNode.childNode(withName: nodeName, recursively: true) {
+                          
+                           
+                            fireNode.removeAllActions()
+                          
+                          
+                        }
+                    }
+                }
+            }
+           
             selectedNode = nil
             originalNodePosition = nil
             originalScale = nil
