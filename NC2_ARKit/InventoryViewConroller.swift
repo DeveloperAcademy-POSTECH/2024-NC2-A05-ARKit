@@ -10,7 +10,9 @@ class InventoryViewController: UIViewController, UICollectionViewDelegate, UICol
 
     let models = ["Animated_fire", "Seaside", "Campfire_rock", "Campfire_zone"]
     let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
-
+    let selectButton = UIButton(type: .system)
+    var selectedModel: String?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         view.backgroundColor = .white
@@ -27,10 +29,20 @@ class InventoryViewController: UIViewController, UICollectionViewDelegate, UICol
         view.addSubview(collectionView)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
+            collectionView.topAnchor.constraint(equalTo: view.topAnchor, constant: 50),
             collectionView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            collectionView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             collectionView.widthAnchor.constraint(equalTo: view.widthAnchor),
             collectionView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.5)
+        ])
+        
+        selectButton.setTitle("Select", for: .normal)
+        selectButton.setTitleColor(.green, for: .normal)
+        selectButton.addTarget(self, action: #selector(selectButtonTapped), for: .touchUpInside)
+        view.addSubview(selectButton)
+        selectButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            selectButton.topAnchor.constraint(equalTo: collectionView.bottomAnchor, constant: 20),
+            selectButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
     }
 
@@ -56,9 +68,12 @@ class InventoryViewController: UIViewController, UICollectionViewDelegate, UICol
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let selectedModel = models[indexPath.item]
+        selectedModel = models[indexPath.item]
+    }
+    
+    @objc func selectButtonTapped() {
+        guard let selectedModel = selectedModel else { return }
         delegate?.didSelectModel(named: selectedModel)
         dismiss(animated: true, completion: nil)
     }
- 
 }

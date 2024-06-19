@@ -15,8 +15,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
     
     // 사운드 플레이어용 속성 추가
     var audioPlayer: AVAudioPlayer?
-    var soundIndex = 0
+    var soundIndex = 1
     var currentModelName: String?
+    var soundName: String = ""
     
     // 핸드드래그용 노드 추가
     var selectedNode: SCNNode?
@@ -24,6 +25,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
     var originalScale: SCNVector3?
     var startY: CGFloat?
     var originalZScale: Float?
+    
+    // 인벤토리 뷰 컨트롤러 추가
+    var inventoryViewController: InventoryViewController?
     
     
     override func viewDidLoad() {
@@ -52,7 +56,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
       
     //    loadUSDZModel(named: "Animated_fire")
         // 플러스버튼으로 인벤토리 생성
-        setupPlusButton()
+        setupInventoryButton()
         // 제스처 인식기 추가
         addGestureRecognizers()
     }
@@ -100,18 +104,22 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
     // 사운드 함수
     
     @objc private func playSound(_ modelName: String?) {
-        soundIndex = (soundIndex + 1) % 3  // 0, 1, 2를 순환
-        let soundName = "Fire_Sound_\(soundIndex + 1)"
+        soundIndex = (soundIndex) % 2 + 1 // 0, 1, 2를 순환
+        guard let modelName = modelName else { return }
+        if modelName == "Seaside" {
+            soundName = "Water_Sound"
+        }
+        else {
+            soundName = "Fire_Sound_\(soundIndex)"
+        }
+       
           
         guard let url = Bundle.main.url(forResource: soundName, withExtension: "mp3")  else { return }
             do {
                 audioPlayer = try AVAudioPlayer(contentsOf: url)
                 audioPlayer?.prepareToPlay()
-               
-                guard let modelName = modelName else { return }
-                if modelName != "Seaside" {
-                    audioPlayer?.play()
-                }
+                audioPlayer?.play()
+             
             } catch {
                 print(error)
             }
@@ -121,27 +129,60 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
     
     
     // 인벤토리 함수
-    func setupPlusButton() {
-        let plusButton = UIButton(type: .system)
-        plusButton.setTitle("+", for: .normal)
-        plusButton.titleLabel?.font = UIFont.systemFont(ofSize: 30)
-        plusButton.frame = CGRect(x: self.view.frame.width - 60, y: 40, width: 50, height: 50)
-        plusButton.addTarget(self, action: #selector(plusButtonTapped), for: .touchUpInside)
-        self.view.addSubview(plusButton)
-    }
-    
-    @objc func plusButtonTapped() {
-        let inventoryVC = InventoryViewController()
-        inventoryVC.delegate = self
-        inventoryVC.modalPresentationStyle = .pageSheet
-        if let sheet = inventoryVC.sheetPresentationController {
-            sheet.detents = [.medium(), .large()]
-        }
-        present(inventoryVC, animated: true, completion: nil)
+    func setupInventoryButton() {
+        let inventoryButton = UIButton(type: .system)
+        let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 30, weight: .regular)
+        let inventoryImage = UIImage(systemName: "square.grid.2x2.fill", withConfiguration: symbolConfiguration)
+        inventoryButton.setImage(inventoryImage, for: .normal)
         
+        // 색상 설정 (HEX 코드: E1B778)
+        inventoryButton.tintColor = UIColor(hex: "#E1B778")
+        
+        inventoryButton.translatesAutoresizingMaskIntoConstraints = false
+        inventoryButton.addTarget(self, action: #selector(inventoryButtonTapped), for: .touchUpInside)
+        self.view.addSubview(inventoryButton)
+        
+        // 오토레이아웃으로 위치 설정
+        NSLayoutConstraint.activate([
+            inventoryButton.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 17),
+            inventoryButton.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -34),
+            inventoryButton.widthAnchor.constraint(equalToConstant: 26),
+            inventoryButton.heightAnchor.constraint(equalToConstant: 26)
+        ])
     }
-       
-    
+
+   
+    @objc func inventoryButtonTapped() {
+          let inventoryVC = InventoryViewController()
+          inventoryVC.delegate = self
+          inventoryVC.modalPresentationStyle = .pageSheet
+          if let sheet = inventoryVC.sheetPresentationController {
+              sheet.detents = [.medium(), .large()] // 설정 가능한 detents
+              sheet.prefersGrabberVisible = true // Grabber를 보이게 설정
+              sheet.prefersScrollingExpandsWhenScrolledToEdge = false // 스크롤시 확장 방지
+              sheet.prefersEdgeAttachedInCompactHeight = true // Compact height에서 가장자리 붙이기
+              sheet.widthFollowsPreferredContentSizeWhenEdgeAttached = true // 너비 조정
+          }
+          present(inventoryVC, animated: true, completion: nil)
+      }
+
+    func setupInventoryView() {
+           let inventoryVC = InventoryViewController()
+           inventoryVC.delegate = self
+           addChild(inventoryVC)
+           view.addSubview(inventoryVC.view)
+           
+           inventoryVC.view.translatesAutoresizingMaskIntoConstraints = false
+           NSLayoutConstraint.activate([
+               inventoryVC.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+               inventoryVC.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+               inventoryVC.view.heightAnchor.constraint(equalToConstant: 236),
+               inventoryVC.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+           ])
+           
+           inventoryVC.didMove(toParent: self)
+           self.inventoryViewController = inventoryVC
+       }
     
    // 제스쳐 함수
     func addGestureRecognizers() {
@@ -440,6 +481,25 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
 extension ViewController: InventoryViewControllerDelegate {
     func didSelectModel(named modelName: String) {
         loadUSDZModel(named: modelName)
+        dismiss(animated: true, completion: nil)
     }
 }
 
+
+// UIColor 확장 기능을 추가하여 HEX 코드를 UIColor로 변환
+extension UIColor {
+    convenience init(hex: String) {
+        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
+
+        var rgb: UInt64 = 0
+
+        Scanner(string: hexSanitized).scanHexInt64(&rgb)
+
+        let red = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
+        let green = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
+        let blue = CGFloat(rgb & 0x0000FF) / 255.0
+
+        self.init(red: red, green: green, blue: blue, alpha: 1.0)
+    }
+}
