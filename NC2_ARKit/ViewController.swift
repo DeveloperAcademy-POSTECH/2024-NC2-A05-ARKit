@@ -7,12 +7,17 @@ import UIKit
 import SceneKit
 import ARKit
 import SceneKit.ModelIO
-
+import AVFoundation
 
 class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDelegate  {
     
     @IBOutlet var sceneView: ARSCNView!
     
+    // 사운드 플레이어용 속성 추가
+    var audioPlayer: AVAudioPlayer?
+    var soundIndex = 1
+    var currentModelName: String?
+    var soundName: String = ""
     
     // 핸드드래그용 노드 추가
     var selectedNode: SCNNode?
@@ -20,6 +25,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
     var originalScale: SCNVector3?
     var startY: CGFloat?
     var originalZScale: Float?
+    
+    // 인벤토리 뷰 컨트롤러 추가
+    var inventoryViewController: InventoryViewController?
     
     
     override func viewDidLoad() {
@@ -46,11 +54,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
         
         // USDZ 파일 로드 (초기 로드)
       
-        loadUSDZModel(named: "Animated_fire")
-        // 버튼 설정
-        // setupButtons()
-        // 플러스버튼으로 인벤토리 생성
-        setupPlusButton()
+    //    loadUSDZModel(named: "Animated_fire")
+        // 버튼으로 인벤토리 생성
+        setupInventoryButton()
         // 제스처 인식기 추가
         addGestureRecognizers()
     }
@@ -78,15 +84,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
     }
     
     // MARK: - ARSCNViewDelegate
-    
-    /*
-     // Override to create and configure nodes for anchors added to the view's session.
-     func renderer(_ renderer: SCNSceneRenderer, nodeFor anchor: ARAnchor) -> SCNNode? {
-     let node = SCNNode()
-     
-     return node
-     }
-     */
+   
     
     func session(_ session: ARSession, didFailWithError error: Error) {
         // Present an error message to the user
@@ -103,28 +101,106 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
         
     }
     
-    // 인벤토리 함수
-    func setupPlusButton() {
-        let plusButton = UIButton(type: .system)
-        plusButton.setTitle("+", for: .normal)
-        plusButton.titleLabel?.font = UIFont.systemFont(ofSize: 30)
-        plusButton.frame = CGRect(x: self.view.frame.width - 60, y: 40, width: 50, height: 50)
-        plusButton.addTarget(self, action: #selector(plusButtonTapped), for: .touchUpInside)
-        self.view.addSubview(plusButton)
-    }
-    
-    @objc func plusButtonTapped() {
-        let inventoryVC = InventoryViewController()
-        inventoryVC.delegate = self
-        inventoryVC.modalPresentationStyle = .pageSheet
-        if let sheet = inventoryVC.sheetPresentationController {
-            sheet.detents = [.medium(), .large()]
+    // 사운드 관련 함수
+    @objc private func playSound(_ modelName: String?) {
+        soundIndex = (soundIndex) % 2 + 1 // 0, 1, 2를 순환
+        guard let modelName = modelName else { return }
+        if modelName == "Seaside" {
+            soundName = "Water_Sound"
         }
-        present(inventoryVC, animated: true, completion: nil)
+        else {
+            soundName = "Fire_Sound_\(soundIndex)"
+        }
+        guard let url = Bundle.main.url(forResource: soundName, withExtension: "mp3")  else { return }
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: url)
+                audioPlayer?.prepareToPlay()
+                audioPlayer?.play()
+             
+            } catch {
+                print(error)
+            }
         
     }
-       
     
+    @objc private func pauseSound(_ modelName: String?) {
+        soundIndex = (soundIndex) % 2 + 1 // 0, 1, 2를 순환
+        guard let modelName = modelName else { return }
+        if modelName == "Seaside" {
+            soundName = "Water_Sound"
+        }
+        else {
+            soundName = "Fire_Sound_\(soundIndex)"
+        }
+        guard let url = Bundle.main.url(forResource: soundName, withExtension: "mp3")  else { return }
+            do {
+                audioPlayer = try AVAudioPlayer(contentsOf: url)
+                audioPlayer?.prepareToPlay()
+                audioPlayer?.pause()
+             
+            } catch {
+                print(error)
+            }
+        
+    }
+    
+    
+    
+    // 인벤토리 함수
+    func setupInventoryButton() {
+        let inventoryButton = UIButton(type: .system)
+        let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 30, weight: .regular)
+        let inventoryImage = UIImage(systemName: "square.grid.2x2.fill", withConfiguration: symbolConfiguration)
+        inventoryButton.setImage(inventoryImage, for: .normal)
+        
+        // 색상 설정 (HEX 코드: E1B778)
+        inventoryButton.tintColor = UIColor(hex: "#E1B778")
+        
+        inventoryButton.translatesAutoresizingMaskIntoConstraints = false
+        inventoryButton.addTarget(self, action: #selector(inventoryButtonTapped), for: .touchUpInside)
+        self.view.addSubview(inventoryButton)
+        
+        // 오토레이아웃으로 위치 설정
+        NSLayoutConstraint.activate([
+            inventoryButton.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 17),
+            inventoryButton.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -34),
+            inventoryButton.widthAnchor.constraint(equalToConstant: 26),
+            inventoryButton.heightAnchor.constraint(equalToConstant: 26)
+        ])
+    }
+
+   
+    @objc func inventoryButtonTapped() {
+          let inventoryVC = InventoryViewController()
+          inventoryVC.delegate = self
+          inventoryVC.modalPresentationStyle = .pageSheet
+          if let sheet = inventoryVC.sheetPresentationController {
+              sheet.detents = [.medium(), .large()] // 설정 가능한 detents
+              sheet.prefersGrabberVisible = false // Grabber를 보이게 설정
+              sheet.prefersScrollingExpandsWhenScrolledToEdge = false // 스크롤시 확장 방지
+              sheet.prefersEdgeAttachedInCompactHeight = true // Compact height에서 가장자리 붙이기
+              sheet.widthFollowsPreferredContentSizeWhenEdgeAttached = true // 너비 조정
+          }
+          present(inventoryVC, animated: true, completion: nil)
+      }
+
+    func setupInventoryView() {
+           let inventoryVC = InventoryViewController()
+           inventoryVC.delegate = self
+           addChild(inventoryVC)
+           view.addSubview(inventoryVC.view)
+           
+           inventoryVC.view.translatesAutoresizingMaskIntoConstraints = false
+           NSLayoutConstraint.activate([
+               inventoryVC.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+               inventoryVC.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+               inventoryVC.view.heightAnchor.constraint(equalToConstant: 236),
+               inventoryVC.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+           ])
+           
+           inventoryVC.didMove(toParent: self)
+           self.inventoryViewController = inventoryVC
+       }
     
    // 제스쳐 함수
     func addGestureRecognizers() {
@@ -143,79 +219,21 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
         
         // 롱프레스 제스처 추가
         let longPressGestureRecognizer = UILongPressGestureRecognizer(target: self, action: #selector(handleLongPress(_:)))
-        // 최소 1,5초동안은 프레싱되어야 제스쳐를 인식합니다
-        longPressGestureRecognizer.minimumPressDuration = 1.5
-        // 1.5초 안에 들어오는 제스쳐는 삭제합니다(버리기)
+        // 최소  2초동안은 프레싱되어야 제스쳐를 인식합니다
+        longPressGestureRecognizer.minimumPressDuration = 2
+        // 2초 안에 들어오는 제스쳐는 삭제합니다(버리기)
         longPressGestureRecognizer.delaysTouchesBegan = true
         sceneView.addGestureRecognizer(longPressGestureRecognizer)
         
+        // 사운드 재생용 더블 탭 제스쳐 추가
+        /*
+        let doubleTapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(handleDoubleTap(_:)))
+        doubleTapGestureRecognizer.numberOfTapsRequired = 2
+        sceneView.addGestureRecognizer(doubleTapGestureRecognizer)
+         */
     }
     
-    // 버튼 관련 함수
-    func setupButtons() {
-        let buttonTitles = ["Fire", "SeaSide", "Rock", "Zone"]
-        let buttonColors: [UIColor] = [.red, .blue, .green, .brown]
-        
-        for (index, title) in buttonTitles.enumerated() {
-            let button = UIButton(frame: CGRect(x: 20, y: 50 + (index * 60), width: 100, height: 50))
-            button.setTitle(title, for: .normal)
-            button.backgroundColor = buttonColors[index]
-            button.addTarget(self, action: #selector(buttonTapped(_:)), for: .touchUpInside)
-            button.tag = index
-            self.view.addSubview(button)  // 버튼을 뷰 컨트롤러의 메인 뷰에 추가
-        }
-       }
-       
-       @objc func buttonTapped(_ sender: UIButton) {
-           switch sender.tag {
-           case 0:
-               loadUSDZModel(named: "Animated_fire")
-           case 1:
-               loadUSDZModel(named: "Seaside")
-           case 2:
-               loadUSDZModel(named: "Campfire_rock")
-           case 3:
-               loadUSDZModel(named: "Campfire_Zone")
-           default:
-               break
-           }
-       }
-    
-    
-    
-    func makeEarth() {
-        let earth = SCNSphere(radius: 0.2)
-        let material = SCNMaterial()
-        
-        material.diffuse.contents = UIImage(named: "art.scnassets/8081_earthmap2k.jpg")
-        
-        earth.materials = [material]
-        
-        let node = SCNNode(geometry: earth)
-        node.position = SCNVector3(x: 0, y: 0, z: -1)
-        
-        sceneView.scene.rootNode.addChildNode(node)
-        // node.addChildNode(makeNameText())
-        node.addChildNode(makeFire())
-        
-        
-        addAnimation(node: node)
-    }
-    
-    func makeNameText() -> SCNNode {
-        let text = SCNText(string: "Judy", extrusionDepth: 2)
-        
-        let material = SCNMaterial()
-        material.diffuse.contents = UIColor.systemPink
-        
-        text.materials = [material]
-        
-        let textNode = SCNNode(geometry: text)
-        textNode.scale = SCNVector3(0.02, 0.02, 0.02)
-        textNode.position = SCNVector3(-0.2, 0.2, 0)
-        
-        return textNode
-    }
+   
     
     func addAnimation(node: SCNNode) {
         let rotateOneTime = SCNAction.rotateBy(x: 0, y: 0.8, z: 0, duration: 5)
@@ -229,86 +247,17 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
     }
     
     func addMoveUpDownAnimation(node: SCNNode) {
-        
         let moveUp = SCNAction.moveBy(x: 0, y: 3, z: 0, duration: 2.5)
         let moveDown = SCNAction.moveBy(x: 0, y: -0.2, z: 0, duration: 2.5)
         let moveSequence = SCNAction.sequence([moveUp, moveDown])
-        
         let actionRepeat = SCNAction.repeatForever(moveSequence)
-        
         node.runAction(actionRepeat)
-        
     }
        
-    /*
-     func makeNameText() -> SCNNode {
-     let text = SCNText(string: "Judy", extrusionDepth: 2)
-     
-     let material = SCNMaterial()
-     material.diffuse.contents = UIColor.systemPink
-     
-     text.materials = [material]
-     
-     let textNode = SCNNode(geometry: text)
-     textNode.scale = SCNVector3(0.02, 0.02, 0.02)
-     textNode.position = SCNVector3(-0.2, 0.2, 0)
-     
-     return textNode
-     }
-     */
-    
-    //추가코드
-    func makeFire() -> SCNNode {
-        // 불꽃 효과 생성
-        let fire = SCNParticleSystem(named: "Fire.scnp", inDirectory: "art.scnassets")
-        
-        guard let fire = fire else {
-            fatalError("Failed to load Fire.scnp from art.scnassets")
-        }
-        // 불꽃 노드 생성
-        let fireNode = SCNNode()
-        
-        fireNode.addParticleSystem(fire)
-        
-        // 불꽃 노드 위치 설정
-        fireNode.position = SCNVector3(x: 0, y: 0, z: 0)
-        
-        // 불꽃 노드를 씬에 추가
-        //sceneView.scene.rootNode.addChildNode(fireNode)
-        return fireNode
-    }
-    
-    
-    func makeAnotherFire() {
-        
-        let fireSphere = SCNSphere(radius: 0.2)
-        let material = SCNMaterial()
-        
-        material.diffuse.contents = UIImage(named: "art.scnassets/fire.jpg")
-        
-        fireSphere.materials = [material]
-        
-        let node = SCNNode(geometry: fireSphere)
-        node.position = SCNVector3(x: 0, y: 0, z: -1)
-        
-        sceneView.scene.rootNode.addChildNode(node)
-        // node.addChildNode(makeNameText())
-        node.addChildNode(makeFire())
-        
-        addAnimation(node: node)
-    }
+   
     
     func loadUSDZModel(named modelName: String) {
-        // Load the USDZ model
-        // art.scnassets/Experience_the_tranquility_of_the_seaside
-        // art.scnassets/Animated_fire
-        /*
-        guard let url = Bundle.main.url(forResource: "art.scnassets/Experience_the_tranquility_of_the_seaside", withExtension: "usdz"), let node = SCNReferenceNode(url: url) else {
-            print("USDZ 파일을 찾을 수 없습니다.")
-            return
-        }
-        */
-        
+     
         // sceneView의 씬에서 루트 노드의 모든 자식 노드를 제거
         // forEach 문으로 루트 노드의 모든 자식노드를 돌면서 씬의 루트 노드에 있는 모든 자식 노드를 제거함
         sceneView.scene.rootNode.childNodes.forEach { $0.removeFromParentNode() }
@@ -322,7 +271,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
         // 일부 객체가 검게 보이는 현상이 있으므로 다시 조명추가해줌
         // 씬에서 오브젝트를 갈아낄때 노드가 삭제되면서 조명(라이팅)이 제거된 것으로 보임
         addLighting()
-        
+        currentModelName = modelName
+      
+        // 소리를 재생합니다
+        playSound(modelName)
+      
         // 노드를 올립니다
         node.load()
         // Animated_fire 모델의 특성으로 z축으로 떨어져서 보내게 했습니다
@@ -361,7 +314,6 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
     
     @objc func handleTap(gesture: UITapGestureRecognizer) {
         let location = gesture.location(in: sceneView)
-        
             let hitResults = sceneView.hitTest(location, options: nil)
             if let hitResult = hitResults.first {
                 selectedNode = hitResult.node
@@ -370,31 +322,54 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
                 }
                 originalNodePosition = selectedNode?.position
                 originalScale = selectedNode?.scale
-                if let selectedNode = selectedNode, let originalScale = originalScale {
+                if let selectedNode = selectedNode {
                     for i in 1...64 {
                         let nodeName = String(format: "Feu%02d", i)
                         if let fireNode = selectedNode.childNode(withName: nodeName, recursively: true) {
                             if fireNode.isHidden {
                                 fireNode.isHidden = false
+                                playSound(currentModelName)
                             }
                             else {
                                 fireNode.isHidden = true
+                                pauseSound(currentModelName)
                             }
-                            fireNode.scale = SCNVector3(x: originalScale.x, y: originalScale.y, z: 100)
+                            
                         }
                     }
+                    let candleNodeName = "candle_Cone"
+                   
+                    if let candleNode = selectedNode.childNode(withName: candleNodeName, recursively: true) {
+                        if candleNode.isHidden {
+                            candleNode.isHidden = false
+                            playSound(currentModelName)
+                        }
+                        else {
+                            candleNode.isHidden = true
+                            pauseSound(currentModelName)
+                        }
+                        
+                    }
+                    let starOrbNodeName = "star_Orb_center"
+                    if let starOrbNode = selectedNode.childNode(withName: starOrbNodeName, recursively: true) {
+                        if starOrbNode.isHidden {
+                            starOrbNode.isHidden = false
+                            playSound(currentModelName)
+                        }
+                        else {
+                            starOrbNode.isHidden = true
+                            pauseSound(currentModelName)
+                        }
+                        
+                    }
+                    
                 }
             }
         
        
     }
     
-    
-    func moveSelectedNode(to transform: matrix_float4x4) {
-        guard let selectedNode = selectedNode else { return }
-        let position = transform.columns.3
-        selectedNode.position = SCNVector3(position.x, position.y, position.z)
-    }
+
     
     @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
         let location = gesture.location(in: sceneView)
@@ -411,7 +386,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
             }
             
         case .changed:
-            if let selectedNode = selectedNode, let originalNodePosition = originalNodePosition,let originalScale = originalScale  {
+            if let selectedNode = selectedNode, let originalNodePosition = originalNodePosition  {
                 let translation = gesture.translation(in: sceneView)
                 let newPosition = SCNVector3(
                     x: originalNodePosition.x + Float(translation.x * 0.05),
@@ -431,7 +406,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
         }
     }
     
-    
+    func adjustPivot(node: SCNNode) {
+        let min = node.boundingBox.min
+        let max = node.boundingBox.max
+        node.pivot = SCNMatrix4MakeTranslation(0, 0, (max.z - min.z) / -2)
+    }
     @objc func handlePinch(_ gesture: UIPinchGestureRecognizer) {
         let location = gesture.location(in: (gesture.view as! ARSCNView))
         switch gesture.state {
@@ -471,23 +450,62 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
                 }
                 originalNodePosition = selectedNode?.position
                 originalScale = selectedNode?.scale
-                if let selectedNode = selectedNode, let originalScale = originalScale {
+                if let selectedNode = selectedNode {
                     for i in 1...64 {
                         let nodeName = String(format: "Feu%02d", i)
                         if let fireNode = selectedNode.childNode(withName: nodeName, recursively: true) {
-                            if fireNode.isHidden {
-                                fireNode.isHidden = false
-                            }
-                            else {
-                                fireNode.isHidden = true
-                            }
-                            fireNode.scale = SCNVector3(x: originalScale.x, y: originalScale.y, z: 100)
+                            let scaleZAction = SCNAction.scaleZ(to: 5, duration: 5.0)
+                            adjustPivot(node: fireNode)
+                            fireNode.runAction(scaleZAction)
                         }
                     }
+                    let candleNodeName = "candle_Cone"
+                    if let candleNode = selectedNode.childNode(withName: candleNodeName, recursively: true) {
+                        let scaleZAction = SCNAction.scaleY(to: 5, duration: 5.0)
+                        adjustPivot(node: candleNode)
+                        candleNode.runAction(scaleZAction)
+                    }
+                    let starOrbNodeName = "star_Orb_center"
+                    if let starOrbNode = selectedNode.childNode(withName: starOrbNodeName, recursively: true) {
+                        let scaleZAction = SCNAction.scaleY(to: 5, duration: 5.0)
+                        adjustPivot(node: starOrbNode)
+                        starOrbNode.runAction(scaleZAction)
+                    }
+                    
+                    
                 }
             }
         
         case .ended, .cancelled:
+            let hitResults = sceneView.hitTest(location, options: nil)
+            if let hitResult = hitResults.first {
+                selectedNode = hitResult.node
+                while let parent = selectedNode?.parent, parent !== sceneView.scene.rootNode {
+                    selectedNode = parent
+                }
+                originalNodePosition = selectedNode?.position
+                originalScale = selectedNode?.scale
+                if let selectedNode = selectedNode {
+                    for i in 1...64 {
+                        let nodeName = String(format: "Feu%02d", i)
+                        if let fireNode = selectedNode.childNode(withName: nodeName, recursively: true) {
+                            fireNode.removeAllActions()
+                        }
+                    }
+                    let candleNodeName = "candle_Cone"
+                    if let candleNode = selectedNode.childNode(withName: candleNodeName, recursively: true) {
+                       
+                        candleNode.removeAllActions()
+                    }
+                    let starOrbNodeName = "star_Orb_center"
+                    if let starOrbNode = selectedNode.childNode(withName: starOrbNodeName, recursively: true) {
+                       
+                        starOrbNode.removeAllActions()
+                    }
+                }
+                
+            }
+           
             selectedNode = nil
             originalNodePosition = nil
             originalScale = nil
@@ -497,27 +515,67 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
             break
         }
     }
-
+    
+    @objc func handleDoubleTap(_ gesture: UITapGestureRecognizer) {
+        playSound(currentModelName)
+    }
 }
-    extension SCNAction {
-        class func scale(to scale: CGFloat, duration: TimeInterval) -> SCNAction {
-            return SCNAction.customAction(duration: duration) { node, elapsedTime in
-                let initialScale = node.scale
-                let delta = scale - CGFloat(initialScale.z)
-                let percentageComplete = elapsedTime / CGFloat(duration)
-                node.scale = SCNVector3(
-                    x: initialScale.x,
-                    y: initialScale.y,
-                    z: Float(CGFloat(initialScale.z) + delta * percentageComplete)
-                )
-            }
+
+// 스케일 z축으로 늘리기(불꽃늘리기) 커스텀 액션
+extension SCNAction {
+  
+    class func scaleZ(to scale: Float, duration: TimeInterval) -> SCNAction {
+        return SCNAction.customAction(duration: duration) { node, elapsedTime in
+            let percentageComplete = elapsedTime / CGFloat(duration)
+            let initialScale = node.scale.z
+            let delta = scale - initialScale
+            let newScale = initialScale + delta * Float(percentageComplete)
+            let min = node.boundingBox.min
+            let max = node.boundingBox.max
+            node.pivot = SCNMatrix4MakeTranslation(0, 0, (max.z - min.z) / -2)
+            node.scale.z = newScale
         }
     }
+    
+    
+      class func scaleY(to scale: Float, duration: TimeInterval) -> SCNAction {
+          return SCNAction.customAction(duration: duration) { node, elapsedTime in
+              let percentageComplete = elapsedTime / CGFloat(duration)
+              let initialScale = node.scale.y
+              let delta = scale - initialScale
+              let newScale = initialScale + delta * Float(percentageComplete)
+              let min = node.boundingBox.min
+              let max = node.boundingBox.max
+              node.pivot = SCNMatrix4MakeTranslation(0, 0, (max.z - min.z) / -2)
+              node.scale.y = newScale
+          }
+      }
+    
+}
 
 // MARK: - 인벤토리 컨트롤러
 extension ViewController: InventoryViewControllerDelegate {
     func didSelectModel(named modelName: String) {
         loadUSDZModel(named: modelName)
+        dismiss(animated: true, completion: nil)
     }
 }
 
+
+// UIColor 확장 기능을 추가하여 HEX 코드를 UIColor로 변환
+extension UIColor {
+    convenience init(hex: String) {
+        var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
+        hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
+
+        var rgb: UInt64 = 0
+
+        Scanner(string: hexSanitized).scanHexInt64(&rgb)
+
+        let red = CGFloat((rgb & 0xFF0000) >> 16) / 255.0
+        let green = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
+        let blue = CGFloat(rgb & 0x0000FF) / 255.0
+
+        self.init(red: red, green: green, blue: blue, alpha: 1.0)
+    }
+}

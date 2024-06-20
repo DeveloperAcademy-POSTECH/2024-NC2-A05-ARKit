@@ -8,29 +8,41 @@ class InventoryViewController: UIViewController, UICollectionViewDelegate, UICol
     
     weak var delegate: InventoryViewControllerDelegate?
 
-    let models = ["Animated_fire", "Seaside", "Campfire_rock", "Campfire_Zone"]
+    let models = ["Animated_fire", "Seaside", "Campfire_rock", "Campfire_zone","Candle_Animated","fire_bowl","Galaxy","Star_orb"]
     let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
-
+    let selectButton = UIButton(type: .system)
+    var selectedModel: String?
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        view.backgroundColor = .white
+        view.backgroundColor = .black
         
         collectionView.delegate = self
         collectionView.dataSource = self
         collectionView.register(UICollectionViewCell.self, forCellWithReuseIdentifier: "cell")
         
         if let layout = collectionView.collectionViewLayout as? UICollectionViewFlowLayout {
-            layout.itemSize = CGSize(width: 100, height: 100)
-            layout.sectionInset = UIEdgeInsets(top: 20, left: 20, bottom: 20, right: 20)
+            layout.itemSize = CGSize(width: 87, height: 87)
+            layout.sectionInset = UIEdgeInsets(top: 17, left: 4, bottom: 17, right: 4)
         }
         
         view.addSubview(collectionView)
         collectionView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
+            collectionView.topAnchor.constraint(equalTo: view.topAnchor, constant: 65),
             collectionView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
-            collectionView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
             collectionView.widthAnchor.constraint(equalTo: view.widthAnchor),
             collectionView.heightAnchor.constraint(equalTo: view.heightAnchor, multiplier: 0.5)
+        ])
+        
+        selectButton.setTitle("Select", for: .normal)
+        selectButton.setTitleColor(.green, for: .normal)
+        selectButton.addTarget(self, action: #selector(selectButtonTapped), for: .touchUpInside)
+        view.addSubview(selectButton)
+        selectButton.translatesAutoresizingMaskIntoConstraints = false
+        NSLayoutConstraint.activate([
+            selectButton.topAnchor.constraint(equalTo: collectionView.bottomAnchor, constant: 48),
+            selectButton.centerXAnchor.constraint(equalTo: view.centerXAnchor)
         ])
     }
 
@@ -56,9 +68,12 @@ class InventoryViewController: UIViewController, UICollectionViewDelegate, UICol
     }
 
     func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        let selectedModel = models[indexPath.item]
+        selectedModel = models[indexPath.item]
+    }
+    
+    @objc func selectButtonTapped() {
+        guard let selectedModel = selectedModel else { return }
         delegate?.didSelectModel(named: selectedModel)
         dismiss(animated: true, completion: nil)
     }
- 
 }
