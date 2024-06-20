@@ -8,7 +8,7 @@ class InventoryViewController: UIViewController, UICollectionViewDelegate, UICol
     
     weak var delegate: InventoryViewControllerDelegate?
 
-    let models = ["Animated_fire", "Seaside", "Campfire_rock", "Campfire_zone","Candle_Animated","fire_bowl","Galaxy","Star_orb","Animated_Ocean"]
+    let models = ["Animated_fire", "Seaside", "Campfire_rock","Candle_Animated","Galaxy","Star_orb"]
     let collectionView = UICollectionView(frame: .zero, collectionViewLayout: UICollectionViewFlowLayout())
     let selectButton = UIButton(type: .system)
     var selectedModel: String?

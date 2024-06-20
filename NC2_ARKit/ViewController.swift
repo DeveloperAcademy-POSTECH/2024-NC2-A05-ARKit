@@ -37,7 +37,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
         sceneView.delegate = self
         
         // Show statistics such as fps and timing information
-        sceneView.showsStatistics = true
+        // sceneView.showsStatistics = true
         //   let scene = SCNScene(named: "art.scnassets/Animated_fire.usdz")!
         
         // Create a new scene
@@ -424,6 +424,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
         let max = node.boundingBox.max
         node.pivot = SCNMatrix4MakeTranslation(0, 0, (max.z - min.z) / -2)
     }
+    
     @objc func handlePinch(_ gesture: UIPinchGestureRecognizer) {
         let location = gesture.location(in: (gesture.view as! ARSCNView))
         switch gesture.state {
@@ -472,6 +473,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
                             fireNode.runAction(scaleZAction)
                         }
                     }
+                     
                     let candleNodeName = "Cone_3"
                    
                     if let candleNode = selectedNode.childNode(withName: candleNodeName, recursively: true) {
@@ -481,7 +483,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
                             candleInnerNode.runAction(scaleYAction)
                             if candleInnerNode.action(forKey: "scaleY") != nil {
                                 let scaleYAction = SCNAction.scaleY(to: 1, duration: 5.0)
-                                adjustPivot(node: candleInnerNode)
+                                //adjustPivot(node: candleInnerNode)
                                 candleInnerNode.runAction(scaleYAction)
                             }
                         }
@@ -526,11 +528,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
                             fireNode.removeAllActions()
                         }
                     }
+                     
                     let candleNodeName = "Cone_3"
                     if let candleNode = selectedNode.childNode(withName: candleNodeName, recursively: true) {
                         if let candleInnerNode = candleNode.childNode(withName: "Object_4", recursively: true) {
                             candleInnerNode.removeAllActions()
-                           
                         }
                     }
                     
@@ -539,19 +541,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
                         if let starOrbCenterNode = starOrbInnerNode.childNode(withName: "Object_4", recursively: true) {
                             if let starOrbNode = starOrbCenterNode.childNode(withName: "Object_0", recursively: true) {
                                 starOrbNode.removeAllActions()
-                               
-                                
                             }
-                            
                         }
-                        
                     }
-                    
                 }
             }
-            
-        
-    
             selectedNode = nil
             originalNodePosition = nil
             originalScale = nil
@@ -569,30 +563,24 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
 
 // 스케일 z축으로 늘리기(불꽃늘리기) 커스텀 액션
 extension SCNAction {
-  
     class func scaleZ(to scale: Float, duration: TimeInterval) -> SCNAction {
         return SCNAction.customAction(duration: duration) { node, elapsedTime in
             let percentageComplete = elapsedTime / CGFloat(duration)
             let initialScale = node.scale.z
             let delta = scale - initialScale
-            let newScale = initialScale + delta * Float(percentageComplete)
-            let min = node.boundingBox.min
-            let max = node.boundingBox.max
-            node.pivot = SCNMatrix4MakeTranslation(0, 0, (max.z - min.z) / -2)
+            let newScale =  delta * Float(percentageComplete)
             node.scale.z = newScale
         }
     }
-    
-    
       class func scaleY(to scale: Float, duration: TimeInterval) -> SCNAction {
           return SCNAction.customAction(duration: duration) { node, elapsedTime in
               let percentageComplete = elapsedTime / CGFloat(duration)
               let initialScale = node.scale.y
               let delta = scale - initialScale
               let newScale = initialScale + delta * Float(percentageComplete)
-              let min = node.boundingBox.min
-              let max = node.boundingBox.max
-              node.pivot = SCNMatrix4MakeTranslation(0, 0, (max.z - min.z) / -2)
+//              let min = node.boundingBox.min
+//              let max = node.boundingBox.max
+//              node.pivot = SCNMatrix4MakeTranslation(0, 0, (max.z - min.z) / -2)
               node.scale.y = newScale
           }
       }
