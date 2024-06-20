@@ -37,7 +37,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
         sceneView.delegate = self
         
         // Show statistics such as fps and timing information
-        sceneView.showsStatistics = true
+        // sceneView.showsStatistics = true
         //   let scene = SCNScene(named: "art.scnassets/Animated_fire.usdz")!
         
         // Create a new scene
@@ -124,7 +124,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
     }
     
     @objc private func pauseSound(_ modelName: String?) {
-        soundIndex = (soundIndex) % 2 + 1 // 0, 1, 2를 순환
+        soundIndex = (soundIndex) % 2 + 1 //  1, 2를 순환
         guard let modelName = modelName else { return }
         if modelName == "Seaside" {
             soundName = "Water_Sound"
@@ -162,10 +162,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
         
         // 오토레이아웃으로 위치 설정
         NSLayoutConstraint.activate([
-            inventoryButton.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 17),
-            inventoryButton.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -34),
-            inventoryButton.widthAnchor.constraint(equalToConstant: 26),
-            inventoryButton.heightAnchor.constraint(equalToConstant: 26)
+            inventoryButton.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 30),
+            inventoryButton.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -50),
+            inventoryButton.widthAnchor.constraint(equalToConstant: 32),
+            inventoryButton.heightAnchor.constraint(equalToConstant: 32)
         ])
     }
 
@@ -337,30 +337,43 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
                             
                         }
                     }
-                    let candleNodeName = "candle_Cone"
+                    
+                    let candleNodeName = "Cone_3"
                    
                     if let candleNode = selectedNode.childNode(withName: candleNodeName, recursively: true) {
-                        if candleNode.isHidden {
-                            candleNode.isHidden = false
-                            playSound(currentModelName)
+                        if let candleInnerNode = candleNode.childNode(withName: "Object_4", recursively: true) {
+                            if candleInnerNode.isHidden {
+                                candleInnerNode.isHidden = false
+                                playSound(currentModelName)
+                            }
+                            else {
+                                candleInnerNode.isHidden = true
+                                pauseSound(currentModelName)
+                            }
                         }
-                        else {
-                            candleNode.isHidden = true
-                            pauseSound(currentModelName)
-                        }
+                       
                         
                     }
-                    let starOrbNodeName = "star_Orb_center"
-                    if let starOrbNode = selectedNode.childNode(withName: starOrbNodeName, recursively: true) {
-                        if starOrbNode.isHidden {
-                            starOrbNode.isHidden = false
-                            playSound(currentModelName)
+                   
+                    let starOrbNodeName = "inner_0"
+                    
+                    
+                    if let starOrbInnerNode = selectedNode.childNode(withName: starOrbNodeName, recursively: true) {
+                        if let starOrbCenterNode = starOrbInnerNode.childNode(withName: "Object_4", recursively: true) {
+                            if let starOrbNode = starOrbCenterNode.childNode(withName: "Object_0", recursively: true) {
+                                if starOrbNode.isHidden {
+                                    starOrbNode.isHidden = false
+                                    playSound(currentModelName)
+                                }
+                                else {
+                                    starOrbNode.isHidden = true
+                                    pauseSound(currentModelName)
+                                }
+                                
+                            }
+                            
                         }
-                        else {
-                            starOrbNode.isHidden = true
-                            pauseSound(currentModelName)
-                        }
-                        
+                      
                     }
                     
                 }
@@ -411,6 +424,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
         let max = node.boundingBox.max
         node.pivot = SCNMatrix4MakeTranslation(0, 0, (max.z - min.z) / -2)
     }
+    
     @objc func handlePinch(_ gesture: UIPinchGestureRecognizer) {
         let location = gesture.location(in: (gesture.view as! ARSCNView))
         switch gesture.state {
@@ -459,23 +473,40 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
                             fireNode.runAction(scaleZAction)
                         }
                     }
-                    let candleNodeName = "candle_Cone"
+                     
+                    let candleNodeName = "Cone_3"
+                   
                     if let candleNode = selectedNode.childNode(withName: candleNodeName, recursively: true) {
-                        let scaleZAction = SCNAction.scaleY(to: 5, duration: 5.0)
-                        adjustPivot(node: candleNode)
-                        candleNode.runAction(scaleZAction)
+                        if let candleInnerNode = candleNode.childNode(withName: "Object_4", recursively: true) {
+                            let scaleYAction = SCNAction.scaleY(to: 5, duration: 5.0)
+                            adjustPivot(node: candleInnerNode)
+                            candleInnerNode.runAction(scaleYAction)
+                            if candleInnerNode.action(forKey: "scaleY") != nil {
+                                let scaleYAction = SCNAction.scaleY(to: 1, duration: 5.0)
+                                //adjustPivot(node: candleInnerNode)
+                                candleInnerNode.runAction(scaleYAction)
+                            }
+                        }
                     }
-                    let starOrbNodeName = "star_Orb_center"
-                    if let starOrbNode = selectedNode.childNode(withName: starOrbNodeName, recursively: true) {
-                        let scaleZAction = SCNAction.scaleY(to: 5, duration: 5.0)
-                        adjustPivot(node: starOrbNode)
-                        starOrbNode.runAction(scaleZAction)
+                   
+                    let starOrbNodeName = "inner_0"
+                    if let starOrbInnerNode = selectedNode.childNode(withName: starOrbNodeName, recursively: true) {
+                        if let starOrbCenterNode = starOrbInnerNode.childNode(withName: "Object_4", recursively: true) {
+                            if let starOrbNode = starOrbCenterNode.childNode(withName: "Object_0", recursively: true) {
+                                let scaleAction = SCNAction.scale(to: 5.0, duration: 2.5)
+                                starOrbNode.runAction(scaleAction)
+                                if starOrbNode.action(forKey: "scale") != nil {
+                                    let scaleAction = SCNAction.scale(to: 1.0, duration: 2.5)
+                                    starOrbNode.runAction(scaleAction)
+                                }
+                            }
+                            
+                        }
+                      
                     }
-                    
-                    
                 }
             }
-        
+            
         case .ended, .cancelled:
             let hitResults = sceneView.hitTest(location, options: nil)
             if let hitResult = hitResults.first {
@@ -489,23 +520,32 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
                     for i in 1...64 {
                         let nodeName = String(format: "Feu%02d", i)
                         if let fireNode = selectedNode.childNode(withName: nodeName, recursively: true) {
+                            if fireNode.action(forKey: "scaleZ") != nil {
+                                let scaleZAction = SCNAction.scaleZ(to: 1, duration: 5.0)
+                                adjustPivot(node: fireNode)
+                                fireNode.runAction(scaleZAction)
+                            }
                             fireNode.removeAllActions()
                         }
                     }
-                    let candleNodeName = "candle_Cone"
+                     
+                    let candleNodeName = "Cone_3"
                     if let candleNode = selectedNode.childNode(withName: candleNodeName, recursively: true) {
-                       
-                        candleNode.removeAllActions()
+                        if let candleInnerNode = candleNode.childNode(withName: "Object_4", recursively: true) {
+                            candleInnerNode.removeAllActions()
+                        }
                     }
-                    let starOrbNodeName = "star_Orb_center"
-                    if let starOrbNode = selectedNode.childNode(withName: starOrbNodeName, recursively: true) {
-                       
-                        starOrbNode.removeAllActions()
+                    
+                    let starOrbNodeName = "inner_0"
+                    if let starOrbInnerNode = selectedNode.childNode(withName: starOrbNodeName, recursively: true) {
+                        if let starOrbCenterNode = starOrbInnerNode.childNode(withName: "Object_4", recursively: true) {
+                            if let starOrbNode = starOrbCenterNode.childNode(withName: "Object_0", recursively: true) {
+                                starOrbNode.removeAllActions()
+                            }
+                        }
                     }
                 }
-                
             }
-           
             selectedNode = nil
             originalNodePosition = nil
             originalScale = nil
@@ -523,30 +563,24 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
 
 // 스케일 z축으로 늘리기(불꽃늘리기) 커스텀 액션
 extension SCNAction {
-  
     class func scaleZ(to scale: Float, duration: TimeInterval) -> SCNAction {
         return SCNAction.customAction(duration: duration) { node, elapsedTime in
             let percentageComplete = elapsedTime / CGFloat(duration)
             let initialScale = node.scale.z
             let delta = scale - initialScale
-            let newScale = initialScale + delta * Float(percentageComplete)
-            let min = node.boundingBox.min
-            let max = node.boundingBox.max
-            node.pivot = SCNMatrix4MakeTranslation(0, 0, (max.z - min.z) / -2)
+            let newScale =  delta * Float(percentageComplete)
             node.scale.z = newScale
         }
     }
-    
-    
       class func scaleY(to scale: Float, duration: TimeInterval) -> SCNAction {
           return SCNAction.customAction(duration: duration) { node, elapsedTime in
               let percentageComplete = elapsedTime / CGFloat(duration)
               let initialScale = node.scale.y
               let delta = scale - initialScale
               let newScale = initialScale + delta * Float(percentageComplete)
-              let min = node.boundingBox.min
-              let max = node.boundingBox.max
-              node.pivot = SCNMatrix4MakeTranslation(0, 0, (max.z - min.z) / -2)
+//              let min = node.boundingBox.min
+//              let max = node.boundingBox.max
+//              node.pivot = SCNMatrix4MakeTranslation(0, 0, (max.z - min.z) / -2)
               node.scale.y = newScale
           }
       }
