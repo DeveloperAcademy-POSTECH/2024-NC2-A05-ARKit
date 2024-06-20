@@ -620,6 +620,8 @@ extension ViewController: InventoryViewControllerDelegate {
            // 회전 변환을 적용하여 방향을 조정합니다.
         let rotation = simd_float4x4(SCNMatrix4MakeRotation(.pi / 2, 0, 0, 1))
            transform = simd_mul(transform, rotation)
+        
+        
         loadUSDZModel(named: modelName, at: transform)
         
 
