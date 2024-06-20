@@ -479,20 +479,24 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
                             let scaleYAction = SCNAction.scaleY(to: 5, duration: 5.0)
                             adjustPivot(node: candleInnerNode)
                             candleInnerNode.runAction(scaleYAction)
+                            if candleInnerNode.action(forKey: "scaleY") != nil {
+                                let scaleYAction = SCNAction.scaleY(to: 1, duration: 5.0)
+                                adjustPivot(node: candleInnerNode)
+                                candleInnerNode.runAction(scaleYAction)
+                            }
                         }
-                       
-                        
                     }
                    
                     let starOrbNodeName = "inner_0"
-                    
-                    
                     if let starOrbInnerNode = selectedNode.childNode(withName: starOrbNodeName, recursively: true) {
                         if let starOrbCenterNode = starOrbInnerNode.childNode(withName: "Object_4", recursively: true) {
                             if let starOrbNode = starOrbCenterNode.childNode(withName: "Object_0", recursively: true) {
                                 let scaleAction = SCNAction.scale(to: 5.0, duration: 2.5)
                                 starOrbNode.runAction(scaleAction)
-                                
+                                if starOrbNode.action(forKey: "scale") != nil {
+                                    let scaleAction = SCNAction.scale(to: 1.0, duration: 2.5)
+                                    starOrbNode.runAction(scaleAction)
+                                }
                             }
                             
                         }
@@ -514,6 +518,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
                     for i in 1...64 {
                         let nodeName = String(format: "Feu%02d", i)
                         if let fireNode = selectedNode.childNode(withName: nodeName, recursively: true) {
+                            if fireNode.action(forKey: "scaleZ") != nil {
+                                let scaleZAction = SCNAction.scaleZ(to: 1, duration: 5.0)
+                                adjustPivot(node: fireNode)
+                                fireNode.runAction(scaleZAction)
+                            }
                             fireNode.removeAllActions()
                         }
                     }
@@ -521,6 +530,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
                     if let candleNode = selectedNode.childNode(withName: candleNodeName, recursively: true) {
                         if let candleInnerNode = candleNode.childNode(withName: "Object_4", recursively: true) {
                             candleInnerNode.removeAllActions()
+                           
                         }
                     }
                     
@@ -529,6 +539,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
                         if let starOrbCenterNode = starOrbInnerNode.childNode(withName: "Object_4", recursively: true) {
                             if let starOrbNode = starOrbCenterNode.childNode(withName: "Object_0", recursively: true) {
                                 starOrbNode.removeAllActions()
+                               
                                 
                             }
                             
