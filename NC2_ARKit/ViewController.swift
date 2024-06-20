@@ -59,21 +59,25 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
         setupInventoryButton()
         // 제스처 인식기 추가
         addGestureRecognizers()
+        // ARSession 설정
+         configureARSession()
     }
-    
+    // ARSession 설정 함수
+    func configureARSession() {
+        let configuration = ARWorldTrackingConfiguration()
+        
+          // 사람을 인식해서 사람 사이의 거리를 계산하여 객체를 위치시키는 기능
+          // 장면에서 사람의 깊이와 관계없이 앱의 가상 콘텐츠에 사람이 겹쳐야 함을 나타내려면  personSegmentation 프레임 시맨틱을 사용합니다.
+          // 객체를 강조하기 위해 해당 코드 생략가능(객체가 최상단에 오는것처럼 보입니다)
+        configuration.frameSemantics.insert(.personSegmentation)
+        configuration.detectionObjects = ARReferenceObject.referenceObjects(inGroupNamed: "AR Resources", bundle: nil) ?? []
+        
+        sceneView.session.run(configuration, options: [.removeExistingAnchors, .resetTracking])
+    }
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
-        // Create a session configuration
-        let configuration = ARWorldTrackingConfiguration()
-      
-        // 사람을 인식해서 사람 사이의 거리를 계산하여 객체를 위치시키는 기능
-        // 장면에서 사람의 깊이와 관계없이 앱의 가상 콘텐츠에 사람이 겹쳐야 함을 나타내려면  personSegmentation 프레임 시맨틱을 사용합니다.
-        // 객체를 강조하기 위해 해당 코드 생략가능(객체가 최상단에 오는것처럼 보입니다)
-        configuration.frameSemantics.insert(.personSegmentation)
-        
-        // Run the view's session
-        sceneView.session.run(configuration)
+        configureARSession()
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -256,7 +260,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
        
    
     
-    func loadUSDZModel(named modelName: String) {
+    func loadUSDZModel(named modelName: String, at transform: simd_float4x4) {
      
         // sceneView의 씬에서 루트 노드의 모든 자식 노드를 제거
         // forEach 문으로 루트 노드의 모든 자식노드를 돌면서 씬의 루트 노드에 있는 모든 자식 노드를 제거함
@@ -278,6 +282,10 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
       
         // 노드를 올립니다
         node.load()
+        
+        
+        // Transform을 사용하여 노드 위치 설정
+        node.simdTransform = transform
         // Animated_fire 모델의 특성으로 z축으로 떨어져서 보내게 했습니다
         node.position = SCNVector3(x: 0, y: 0, z: -15)
         // 원하는 스케일로 조정
@@ -291,6 +299,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
         // selectedNode = node
         // addAnimation(node: node)
         originalScale = node.scale
+         
     }
     
     
@@ -385,27 +394,42 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
 
     
     @objc func handlePan(_ gesture: UIPanGestureRecognizer) {
+      //  gesture.location(in: sceneView)는 제스처 이벤트가 발생한 터치 위치를 sceneView 좌표계에서 반환
         let location = gesture.location(in: sceneView)
         switch gesture.state {
         case .began:
+        // 제스처의 상태를 확인합니다. 여기서는 제스처가 시작될 때(.began)만 코드를 실행합니다.
             let hitResults = sceneView.hitTest(location, options: nil)
+        // sceneView.hitTest(location, options: nil)는 터치 위치(location)에서 히트 테스트를 수행하여 해당 위치에 있는 노드들을 반환(히트 테스트는 터치된 지점에 어떤 노드들이 있는지 확인하는 과정임)
             if let hitResult = hitResults.first {
-                // 최상위 노드로 이동
                 selectedNode = hitResult.node
+                //히트 테스트 결과에서 첫 번째 노드를 selectedNode로 선택합니다. hitResults.first는 히트된 노드들 중 첫 번째 노드를 반환합니다.
                 while let parent = selectedNode?.parent, parent !== sceneView.scene.rootNode {
                     selectedNode = parent
                 }
+                /*
+                - 선택된 노드의 최상위 부모 노드를 찾기 위해 `while` 루프를 사용합니다.
+                - `selectedNode?.parent`가 `nil`이 아니고, `selectedNode`의 부모가 `sceneView.scene.rootNode`가 아닐 때까지 루프를 계속 실행합니다.
+                - `selectedNode`를 계속 부모 노드로 갱신하여 최상위 노드에 도달할 때까지 반복합니다.
+                 */
                 originalNodePosition = selectedNode?.position
             }
             
         case .changed:
             if let selectedNode = selectedNode, let originalNodePosition = originalNodePosition  {
+                // transition은 제스처 인식기에서 현재 팬 동작의 이동 거리를 가져옵니다. 이 거리는 사용자가 화면에서 손가락을 얼마나 이동했는지를 나타냅니다.
                 let translation = gesture.translation(in: sceneView)
                 let newPosition = SCNVector3(
                     x: originalNodePosition.x + Float(translation.x * 0.05),
                     y: originalNodePosition.y + Float(translation.y * -0.05),
                     z: originalNodePosition.z + Float(translation.y * -0.05)
                 )
+                /*
+                 - `translation` 값을 이용하여 `newPosition`을 계산합니다.
+                 - `originalNodePosition.x`에 `translation.x`을 더하여 노드의 새로운 x 위치를 계산합니다. `translation.x`에 0.001을 곱한 것은 화면상의 이동 거리를 3D 공간상의 이동 거리로 변환하기 위함입니다.
+                 - `originalNodePosition.y`는 그대로 유지됩니다. 이는 노드의 높이(y 축)를 변경하지 않음을 의미합니다.
+                 - `originalNodePosition.z`에 `translation.y`을 더하여 노드의 새로운 z 위치를 계산합니다. 마찬가지로 `translation.y`에 0.001을 곱한 것은 화면상의 이동 거리를 3D 공간상의 이동 거리로 변환하기 위함입니다.
+                 */
                 selectedNode.position = newPosition
                 // addAnimation(node: selectedNode)
                 // addMoveUpDownAnimation(node: selectedNode)
@@ -590,7 +614,17 @@ extension SCNAction {
 // MARK: - 인벤토리 컨트롤러
 extension ViewController: InventoryViewControllerDelegate {
     func didSelectModel(named modelName: String) {
-        loadUSDZModel(named: modelName)
+        
+        var transform = sceneView.session.currentFrame?.camera.transform ?? matrix_identity_float4x4
+
+           // 회전 변환을 적용하여 방향을 조정합니다.
+        let rotation = simd_float4x4(SCNMatrix4MakeRotation(.pi / 2, 0, 0, 1))
+           transform = simd_mul(transform, rotation)
+        
+        
+        loadUSDZModel(named: modelName, at: transform)
+        
+
         dismiss(animated: true, completion: nil)
     }
 }
