@@ -19,6 +19,8 @@
 		1A8A4A1F2C22EF940069FB56 /* Fire_Sound_1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 1A8A4A1B2C22EF940069FB56 /* Fire_Sound_1.mp3 */; };
 		1A8A4A202C22EF940069FB56 /* Fire_Sound_2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 1A8A4A1C2C22EF940069FB56 /* Fire_Sound_2.mp3 */; };
 		1A8A4A212C22EF940069FB56 /* Water_Sound.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 1A8A4A1D2C22EF940069FB56 /* Water_Sound.mp3 */; };
+		1AEAD0052C2521AB000B20FD /* Space_Sound_1.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 1AEAD0032C2521AA000B20FD /* Space_Sound_1.mp3 */; };
+		1AEAD0062C2521AB000B20FD /* Space_Sound_2.mp3 in Resources */ = {isa = PBXBuildFile; fileRef = 1AEAD0042C2521AB000B20FD /* Space_Sound_2.mp3 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -34,6 +36,9 @@
 		1A8A4A1B2C22EF940069FB56 /* Fire_Sound_1.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Fire_Sound_1.mp3; sourceTree = "<group>"; };
 		1A8A4A1C2C22EF940069FB56 /* Fire_Sound_2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Fire_Sound_2.mp3; sourceTree = "<group>"; };
 		1A8A4A1D2C22EF940069FB56 /* Water_Sound.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Water_Sound.mp3; sourceTree = "<group>"; };
+		1AEAD0022C24A756000B20FD /* test.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = test.swift; sourceTree = "<group>"; };
+		1AEAD0032C2521AA000B20FD /* Space_Sound_1.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Space_Sound_1.mp3; sourceTree = "<group>"; };
+		1AEAD0042C2521AB000B20FD /* Space_Sound_2.mp3 */ = {isa = PBXFileReference; lastKnownFileType = audio.mp3; path = Space_Sound_2.mp3; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -50,6 +55,7 @@
 		05CABD622A41DBEB0030ECFA = {
 			isa = PBXGroup;
 			children = (
+				1AEAD0022C24A756000B20FD /* test.swift */,
 				1A0E0C1C2C2094B1004F09FF /* NC2_ARKit.xcodeproj */,
 				05CABD6D2A41DBEB0030ECFA /* NC2_ARKit */,
 				05CABD6C2A41DBEB0030ECFA /* Products */,
@@ -90,6 +96,8 @@
 				1A8A4A1B2C22EF940069FB56 /* Fire_Sound_1.mp3 */,
 				1A8A4A1C2C22EF940069FB56 /* Fire_Sound_2.mp3 */,
 				1A8A4A1D2C22EF940069FB56 /* Water_Sound.mp3 */,
+				1AEAD0032C2521AA000B20FD /* Space_Sound_1.mp3 */,
+				1AEAD0042C2521AB000B20FD /* Space_Sound_2.mp3 */,
 			);
 			path = Sound;
 			sourceTree = "<group>";
@@ -158,10 +166,12 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				1AEAD0062C2521AB000B20FD /* Space_Sound_2.mp3 in Resources */,
 				1A8A4A212C22EF940069FB56 /* Water_Sound.mp3 in Resources */,
 				1A0E0C202C2094C9004F09FF /* AppDelegate.swift in Resources */,
 				1A8A4A1F2C22EF940069FB56 /* Fire_Sound_1.mp3 in Resources */,
 				1A0E0C1F2C2094C4004F09FF /* ViewController.swift in Resources */,
+				1AEAD0052C2521AB000B20FD /* Space_Sound_1.mp3 in Resources */,
 				05CABD712A41DBEB0030ECFA /* art.scnassets in Resources */,
 				05CABD7B2A41DBEB0030ECFA /* LaunchScreen.storyboard in Resources */,
 				1A8A4A202C22EF940069FB56 /* Fire_Sound_2.mp3 in Resources */,

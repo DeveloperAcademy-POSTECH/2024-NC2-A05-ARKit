@@ -11,6 +11,7 @@ import AVFoundation
 
 class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDelegate  {
     
+    // ARKit과 SceneKit을 결합한 뷰로, ARKit을 사용하여 실제 환경을 추적하고 SceneKit을 사용하여 3D 콘텐츠를 렌더링하는 역할
     @IBOutlet var sceneView: ARSCNView!
     
     // 사운드 플레이어용 속성 추가
@@ -18,7 +19,8 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
     var soundIndex = 1
     var currentModelName: String?
     var soundName: String = ""
-    
+    var isSoundPlaying = true // 사운드 상태를 저장하기 위한 속성
+       
     // 핸드드래그용 노드 추가
     var selectedNode: SCNNode?
     var originalNodePosition: SCNVector3?
@@ -45,18 +47,11 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
         
         // Set the scene to the view
         sceneView.scene = scene
-        
-        //makeEarth()
-        //   makeAnotherFire()
-        
-        
-      
-        
-        // USDZ 파일 로드 (초기 로드)
-      
-    //    loadUSDZModel(named: "Animated_fire")
+   
         // 버튼으로 인벤토리 생성
         setupInventoryButton()
+        // 사운드 버튼 생성
+        setupSoundButton()
         // 제스처 인식기 추가
         addGestureRecognizers()
         // ARSession 설정
@@ -70,10 +65,16 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
           // 장면에서 사람의 깊이와 관계없이 앱의 가상 콘텐츠에 사람이 겹쳐야 함을 나타내려면  personSegmentation 프레임 시맨틱을 사용합니다.
           // 객체를 강조하기 위해 해당 코드 생략가능(객체가 최상단에 오는것처럼 보입니다)
         configuration.frameSemantics.insert(.personSegmentation)
-        configuration.detectionObjects = ARReferenceObject.referenceObjects(inGroupNamed: "AR Resources", bundle: nil) ?? []
+        // - ARKit가 디바이스의 위치와 방향을 추적하는 데 필요한 정보를 `detectionObjects` (ARKit이 감지할 객체의 목록) 으로 설정
+        //- "AR Resources"라는 이름의 그룹에서 객체를 검색하되, nil로 설정하여 기본 번들을 사용하였음 , referenceObject가 nil을 반환할경우(목록이 nil일때) 빈배열 [] 사용
         
+        configuration.detectionObjects = ARReferenceObject.referenceObjects(inGroupNamed: "AR Resources", bundle: nil) ?? []
+        // - 세션은 ARKit이 현재 디바이스의 카메라 피드와 센서 데이터를 처리하고, 이를 기반으로 가상 콘텐츠를 렌더링하는 데 사용, 주어진 구성과 옵션을 사용하여 AR 세션을 시작함.
+        // - .removeExistingAnchors로 기존 앵커를 제거하는 옵션 제공,새로운 세션이 시작될 때 이전 세션의 앵커를 모두 제거하여 초기 상태로 시작하게 하는 옵션
+        // .resetTracking : 추적 상태를 리셋하는 옵션 설정, 새로운 세션이 시작될 때 디바이스의 추적 상태를 초기화하여  이를 통해 세션이 시작될 때 정확한 위치와 방향을 다시 설정할 수 있게함.
         sceneView.session.run(configuration, options: [.removeExistingAnchors, .resetTracking])
     }
+    
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
         
@@ -112,6 +113,9 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
         if modelName == "Seaside" {
             soundName = "Water_Sound"
         }
+        else if modelName == "Star_orb"{
+            soundName = "Space_Sound_\(soundIndex)"
+        }
         else {
             soundName = "Fire_Sound_\(soundIndex)"
         }
@@ -120,7 +124,7 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
                 audioPlayer = try AVAudioPlayer(contentsOf: url)
                 audioPlayer?.prepareToPlay()
                 audioPlayer?.play()
-             
+                isSoundPlaying = true
             } catch {
                 print(error)
             }
@@ -141,45 +145,78 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
                 audioPlayer = try AVAudioPlayer(contentsOf: url)
                 audioPlayer?.prepareToPlay()
                 audioPlayer?.pause()
-             
+                isSoundPlaying = false
             } catch {
                 print(error)
             }
         
     }
     
+    // 인벤토리 버튼 설정 함수
+        func setupInventoryButton() {
+            let inventoryButton = createCustomButton(withImageName: "square.grid.2x2.fill", selector: #selector(inventoryButtonTapped))
+            self.view.addSubview(inventoryButton)
+            inventoryButton.tintColor =  UIColor(hex: "#E1B778", alpha: 0.9)
+            // 오토레이아웃으로 위치 설정
+            NSLayoutConstraint.activate([
+                inventoryButton.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 17),
+                inventoryButton.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -50),
+                inventoryButton.widthAnchor.constraint(equalToConstant: 45),
+                inventoryButton.heightAnchor.constraint(equalToConstant: 45)
+            ])
+        }
+      
+        // 사운드 버튼 설정 함수
+        func setupSoundButton() {
+            let soundButton = createCustomButton(withImageName: "headphones.circle", selector: #selector(soundButtonTapped))
+            self.view.addSubview(soundButton)
+            // 아이콘 색상 설정 (불투명도 90%)
+            soundButton.tintColor =  UIColor(hex: "#FFFFFF", alpha: 0.9)
+            // 오토레이아웃으로 위치 설정
+            NSLayoutConstraint.activate([
+                soundButton.trailingAnchor.constraint(equalTo: self.view.trailingAnchor, constant: -17),
+                soundButton.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -50),
+                soundButton.widthAnchor.constraint(equalToConstant: 45),
+                soundButton.heightAnchor.constraint(equalToConstant: 45)
+            ])
+        }
+        
+        // 커스텀 버튼 생성 함수
+        func createCustomButton(withImageName imageName: String, selector: Selector) -> UIButton {
+            let button = UIButton(type: .system)
+            let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 26, weight: .regular)
+            let buttonImage = UIImage(systemName: imageName, withConfiguration: symbolConfiguration)
+            button.setImage(buttonImage, for: .normal)
+            
+            // 배경색 설정 (불투명도 60%)
+            button.backgroundColor = UIColor(white: 0.2, alpha: 0.6)
+            button.layer.cornerRadius = 10
+            
+            button.translatesAutoresizingMaskIntoConstraints = false
+            button.addTarget(self, action: selector, for: .touchUpInside)
+            return button
+        }
+        
+       
+        // 사운드 버튼 클릭 함수
+        @objc func soundButtonTapped() {
+            if isSoundPlaying {
+                pauseSound(currentModelName)
+                isSoundPlaying = false
+            } else {
+                playSound(currentModelName)
+                isSoundPlaying = true
+            }
+        }
     
-    
-    // 인벤토리 함수
-    func setupInventoryButton() {
-        let inventoryButton = UIButton(type: .system)
-        let symbolConfiguration = UIImage.SymbolConfiguration(pointSize: 30, weight: .regular)
-        let inventoryImage = UIImage(systemName: "square.grid.2x2.fill", withConfiguration: symbolConfiguration)
-        inventoryButton.setImage(inventoryImage, for: .normal)
-        
-        // 색상 설정 (HEX 코드: E1B778)
-        inventoryButton.tintColor = UIColor(hex: "#E1B778")
-        
-        inventoryButton.translatesAutoresizingMaskIntoConstraints = false
-        inventoryButton.addTarget(self, action: #selector(inventoryButtonTapped), for: .touchUpInside)
-        self.view.addSubview(inventoryButton)
-        
-        // 오토레이아웃으로 위치 설정
-        NSLayoutConstraint.activate([
-            inventoryButton.leadingAnchor.constraint(equalTo: self.view.leadingAnchor, constant: 30),
-            inventoryButton.bottomAnchor.constraint(equalTo: self.view.bottomAnchor, constant: -50),
-            inventoryButton.widthAnchor.constraint(equalToConstant: 32),
-            inventoryButton.heightAnchor.constraint(equalToConstant: 32)
-        ])
-    }
-
+   
    
     @objc func inventoryButtonTapped() {
           let inventoryVC = InventoryViewController()
           inventoryVC.delegate = self
           inventoryVC.modalPresentationStyle = .pageSheet
           if let sheet = inventoryVC.sheetPresentationController {
-              sheet.detents = [.medium(), .large()] // 설정 가능한 detents
+              sheet.detents = [.medium()] // 설정 가능한 detents
               sheet.prefersGrabberVisible = false // Grabber를 보이게 설정
               sheet.prefersScrollingExpandsWhenScrolledToEdge = false // 스크롤시 확장 방지
               sheet.prefersEdgeAttachedInCompactHeight = true // Compact height에서 가장자리 붙이기
@@ -198,12 +235,16 @@ class ViewController: UIViewController, ARSCNViewDelegate, UIGestureRecognizerDe
            NSLayoutConstraint.activate([
                inventoryVC.view.leadingAnchor.constraint(equalTo: view.leadingAnchor),
                inventoryVC.view.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-               inventoryVC.view.heightAnchor.constraint(equalToConstant: 236),
-               inventoryVC.view.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+               inventoryVC.view.bottomAnchor.constraint(equalTo: view.bottomAnchor),
+               inventoryVC.view.heightAnchor.constraint(equalToConstant: 140) // 높이를 140으로 고정
+              
            ])
            
            inventoryVC.didMove(toParent: self)
            self.inventoryViewController = inventoryVC
+        
+        addChild(inventoryVC)
+        view.addSubview(inventoryVC.view)
        }
     
    // 제스쳐 함수
@@ -632,7 +673,7 @@ extension ViewController: InventoryViewControllerDelegate {
 
 // UIColor 확장 기능을 추가하여 HEX 코드를 UIColor로 변환
 extension UIColor {
-    convenience init(hex: String) {
+    convenience init(hex: String, alpha: CGFloat = 1.0) {
         var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
         hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
 
@@ -644,6 +685,6 @@ extension UIColor {
         let green = CGFloat((rgb & 0x00FF00) >> 8) / 255.0
         let blue = CGFloat(rgb & 0x0000FF) / 255.0
 
-        self.init(red: red, green: green, blue: blue, alpha: 1.0)
+        self.init(red: red, green: green, blue: blue, alpha: alpha)
     }
 }
